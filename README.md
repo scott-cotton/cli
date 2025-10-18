@@ -11,7 +11,8 @@ file. No dependencies outside Go stdlib.
 
 ## Why
 
-There are lots of cli libraries out there, and I don't like any of them.
+There are lots of cli libraries out there, I've worked with many and I don't
+like any of them.
 
 - Go's stdlib `flag` only works reasonably for the most rudimentary things
   and is quite difficult to get basic things working like being able to 
