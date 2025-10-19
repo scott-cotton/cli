@@ -60,7 +60,7 @@ func (cmd *Command) parse(cc *Context, args []string, all bool) ([]string, error
 		if ok {
 			opt := d[name]
 			if opt == nil {
-				errs = errors.Join(errs, fmt.Errorf("unknown option %q", name))
+				errs = errors.Join(errs, fmt.Errorf("%w: %q", ErrUnknownOption, name))
 				continue
 			}
 			v, err := opt.Type.Parse(cc, rest)

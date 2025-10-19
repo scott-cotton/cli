@@ -39,7 +39,7 @@ func MainCommand() *cli.Command {
 type AConfig struct {
 	*cli.Command
 	Name  string `cli:"name=n type=string desc=name"`
-	Level int    `cli:"name=level type=int desc='A\\'s level'"`
+	Level int    `cli:"name=level type=int desc='A\'s level'"`
 }
 
 func ACommand() *cli.Command {
@@ -52,7 +52,7 @@ func ACommand() *cli.Command {
 		panic(err)
 	}
 	return cli.NewCommandAt(&cfg.Command, "a").
-		WithSynopsis("a the a command exits code 1 or 3").
+		WithSynopsis("a the a command exits code equal to the number of args").
 		WithOpts(opts...).
 		WithRun(cfg.run)
 }
@@ -60,7 +60,7 @@ func ACommand() *cli.Command {
 func (cfg *AConfig) run(cc *cli.Context, args []string) error {
 	args, err := cfg.Parse(cc, args)
 	if err != nil {
-		return cli.CommandUsageErr(cfg.Command)
+		return err
 	}
 	fmt.Fprintf(cc.Out, "should exit %d\n", len(args))
 	return cli.ExitCodeErr(len(args))
@@ -94,10 +94,12 @@ func BCommand() *cli.Command {
 			Type:        cli.FuncOpt(cfg.parseEnv),
 		}).WithRun(cfg.run)
 }
+
 func (b *BConfig) run(cc *cli.Context, args []string) error {
 	args, err := b.Parse(cc, args)
 	if err != nil {
-		return cli.CommandUsageErr(b.Command)
+		fmt.Printf("b parse err %s\n", err.Error())
+		return err
 	}
 	fmt.Fprintf(cc.Out, "args: %v\n", args)
 	for k, v := range b.env {

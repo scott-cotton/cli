@@ -12,13 +12,6 @@ func (cmd *Command) Usage(cc *Context, err error) {
 		cmd.Hooks.Usage(cc, err)
 		return
 	}
-	ue := &UsageErr{}
-	if errors.As(err, &ue) {
-		if ue.Command != nil && ue.Command != cmd {
-			ue.Command.Usage(cc, err)
-			return
-		}
-	}
 	w := cc.Out
 	if err != nil {
 		w = cc.Err

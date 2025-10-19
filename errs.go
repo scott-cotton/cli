@@ -21,19 +21,3 @@ type ExitCodeErr int
 func (c ExitCodeErr) Error() string {
 	return fmt.Sprintf("exit %d", c)
 }
-
-type UsageErr struct {
-	Command *Command
-}
-
-func (u UsageErr) Unwrap() error {
-	return ErrUsage
-}
-
-func CommandUsageErr(c *Command) *UsageErr {
-	return &UsageErr{Command: c}
-}
-
-func (u *UsageErr) Error() string {
-	return fmt.Sprintf("%s usage error", u.Command.Name)
-}
