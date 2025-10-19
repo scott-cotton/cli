@@ -11,7 +11,10 @@ file. No dependencies outside Go stdlib.
 
 ## Why
 
-There are lots of cli libraries out there, and I don't like any of them.
+There are lots of cli libraries out there, I've worked with many and I don't
+like any of them.  AFAIK, only cli and kong support struct tags for command line 
+options, which is much less cumbersome.  In contrast to Kong, cli is tiny and
+unobtrusive.
 
 - Go's stdlib `flag` only works reasonably for the most rudimentary things
   and is quite difficult to get basic things working like being able to 
@@ -19,6 +22,8 @@ There are lots of cli libraries out there, and I don't like any of them.
 - Cobra/Viper is huge and extremely verbose and seems to constantlly yell
   "you should ..." when it's just a distraction.  It is also much harder
   to customize.
+- github.com/mitchellh/cli does too much
+- Kong does even more
 - Other attempts at finding a balance between minimalism and expressivity
   don't seem to hit the mark for expressivity.
 
