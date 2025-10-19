@@ -60,7 +60,7 @@ func ACommand() *cli.Command {
 func (cfg *AConfig) run(cc *cli.Context, args []string) error {
 	args, err := cfg.Parse(cc, args)
 	if err != nil {
-		return err
+		return cli.CommandUsageErr(cfg.Command)
 	}
 	fmt.Fprintf(cc.Out, "should exit %d\n", len(args))
 	return cli.ExitCodeErr(len(args))
@@ -97,7 +97,7 @@ func BCommand() *cli.Command {
 func (b *BConfig) run(cc *cli.Context, args []string) error {
 	args, err := b.Parse(cc, args)
 	if err != nil {
-		return err
+		return cli.CommandUsageErr(b.Command)
 	}
 	fmt.Fprintf(cc.Out, "args: %v\n", args)
 	for k, v := range b.env {
