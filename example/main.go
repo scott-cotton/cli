@@ -101,7 +101,7 @@ func (b *BConfig) run(cc *cli.Context, args []string) error {
 		fmt.Printf("b parse err %s\n", err.Error())
 		return err
 	}
-	fmt.Fprintf(cc.Out, "args: %v\n", args)
+	fmt.Fprintf(cc.Out, "args: %v\nenv:\n", args)
 	for k, v := range b.env {
 		fmt.Fprintf(cc.Out, "\t%s: %v\n", k, v)
 	}

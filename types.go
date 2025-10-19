@@ -20,6 +20,9 @@ type Command struct {
 	Opts        []*Opt
 	InvalidOpts map[string]bool // no aliases
 
+	// Hooks provides hooks which a Command
+	// can define to override running, usage,
+	// argument parsing, and exiting.
 	Hooks CommandHooks
 }
 
@@ -56,7 +59,9 @@ type Opt struct {
 	Type        OptType
 	Default     *any
 	Value       *any
-	Link        unsafe.Pointer
+
+	// see [Opt.WithLink]
+	Link unsafe.Pointer
 }
 
 // WithLink must be called with a pointer to a type
@@ -116,7 +121,8 @@ type OptType interface {
 	String() string
 }
 
-// BuiltinOptType represents
+// BuiltinOptType represents types which work with Link
+// and [StructOpts] and implements [OptType].
 type BuiltinOptType int
 
 const (

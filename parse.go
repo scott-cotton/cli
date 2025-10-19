@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+// Parse parses arguments, parsing any [Opt]s and
+// returning all non-option arguments as the arguments
+// for cmd.
 func (cmd *Command) Parse(cc *Context, args []string) ([]string, error) {
 	if cmd.Hooks.Parse != nil {
 		return cmd.Hooks.Parse(cc, args)

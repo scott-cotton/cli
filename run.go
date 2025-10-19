@@ -6,6 +6,10 @@ import (
 	"os"
 )
 
+// Run runs cmd.  Error handling is as follows.
+//
+//   - if errors.Is(err, ErrUsage) then [Command.Usage] is called.
+//   - finally, os.Exit(cmd.Exit(cc, err)) is called
 func (cmd *Command) Run(cc *Context, args []string) error {
 	if cmd.Hooks.Run != nil {
 		return cmd.Hooks.Run(cc, args)

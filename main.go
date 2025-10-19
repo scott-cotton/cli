@@ -6,10 +6,12 @@ import (
 	"os"
 )
 
+// Main runs cmd
 func Main(cmd *Command) {
 	MainContext(context.Background(), cmd)
 }
 
+// MainContext runs cmd with a given go context.
 func MainContext(ctx context.Context, cmd *Command) {
 	cc := &Context{
 		Out: os.Stdout,
