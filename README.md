@@ -3,6 +3,8 @@
 `cli` is a minimalist, ergonomic, scalable library for building Go
 commands.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/scott-cotton/cli.svg)](https://pkg.go.dev/github.com/scott-cotton/cli)
+
 ## Usage
 
 Simple [example](example/main.go) demonstrates subcommands, flag struct tags,
