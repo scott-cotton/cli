@@ -16,12 +16,13 @@ func (cmd *Command) Usage(cc *Context, err error) {
 	if err != nil {
 		w = cc.Err
 	}
-	fmt.Fprintf(w, cmd.Description)
-	fmt.Fprintln(w)
-	fmt.Fprintln(w)
+	if cmd.Description != "" {
+		fmt.Fprintln(w, cmd.Description)
+		fmt.Fprintln(w)
+	}
 	fmt.Fprintf(w, "synopsis: %s\n", cmd.Synopsis)
 	if len(cmd.Children) != 0 {
-		fmt.Fprintf(w, "\n\ncommands:\n")
+		fmt.Fprintf(w, "\ncommands:\n")
 		tw := tabwriter.NewWriter(w, 1, 4, 2, ' ', 0)
 		for _, cmd := range cmd.Children {
 			fmt.Fprintf(tw, "\t")
@@ -38,7 +39,7 @@ func (cmd *Command) Usage(cc *Context, err error) {
 		tw.Flush()
 	}
 	path := cmd.Path()
-	for _, c := range path {
+	for i, c := range path {
 		available := "available "
 		if c == cmd {
 			available = ""
@@ -48,12 +49,14 @@ func (cmd *Command) Usage(cc *Context, err error) {
 			name = ""
 		}
 		fmt.Fprintln(w)
-		fmt.Fprintln(w)
+		if i != 0 {
+			fmt.Fprintln(w)
+		}
 		fmt.Fprintf(w, "%s%s options:", available, name)
 		if len(c.Opts) == 0 {
 			fmt.Fprintf(w, " (none)\n")
 		}
-		tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', tabwriter.TabIndent)
+		tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0) //, tabwriter.TabIndent)
 		for _, co := range c.Opts {
 			fmt.Fprintf(tw, "\n\t%s\t\t%s", co.FormatFlag(), co.FormatDesc())
 		}
@@ -63,10 +66,8 @@ func (cmd *Command) Usage(cc *Context, err error) {
 
 	if errors.Is(err, ErrUsage) {
 		fmt.Fprintln(w)
-		fmt.Fprintln(w)
 		fmt.Fprintln(w, err.Error())
 	}
-
 }
 
 func (o *Opt) FormatFlag() string {
@@ -80,5 +81,8 @@ func (o *Opt) FormatFlag() string {
 }
 
 func (o *Opt) FormatDesc() string {
-	return o.Description + "\t" + o.Type.String()
+	if o.Default == nil {
+		return o.Description + "\t" + o.Type.String() + "\t"
+	}
+	return o.Description + fmt.Sprintf("\t(default %v)\t", *o.Default) + o.Type.String() + "\t"
 }

@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 	"unicode"
 	"unsafe"
@@ -20,14 +19,30 @@ import (
 //	    Debug bool `cli:"name=debug type=bool desc='turn on debugging'"`
 //	}
 //
-// The restriction to [BuiltinOpType] allows us to guarantee type safety
-// despite linking the resulting Opts to the memory addresses of the struct
-// via reflection and unsafe pointer casting.
-//
 // Calling [Opt.WithValue] on a resulting opt, for example as is done in
 // the default Parse implementation, will actually update the corresponding
 // struct field directly.
 func StructOpts(s any) ([]*Opt, error) {
+	return StructOptsWithTypes(s, nil)
+}
+
+var builtinMap = map[string]OptType{
+	"bool":   Bool,
+	"string": String,
+	"int":    Int,
+	"float":  Float,
+}
+
+// StructOptsWithTypes
+func StructOptsWithTypes(s any, tyMap map[string]OptType) ([]*Opt, error) {
+	sMap := map[string]OptType{}
+	for k, v := range builtinMap {
+		sMap[k] = v
+	}
+	for k, v := range tyMap {
+		sMap[k] = v
+	}
+
 	ty := reflect.TypeOf(s)
 	if ty == nil {
 		return nil, nil
@@ -56,7 +71,7 @@ func StructOpts(s any) ([]*Opt, error) {
 			continue
 		}
 		uPtr := fVal.Addr().UnsafePointer()
-		opt, err := cliTagOpt(f.Tag.Get("cli"), uPtr)
+		opt, err := cliTagOpt(f.Tag.Get("cli"), sMap, uPtr)
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +82,7 @@ func StructOpts(s any) ([]*Opt, error) {
 	return opts, nil
 }
 
-func cliTagOpt(tag string, p unsafe.Pointer) (*Opt, error) {
+func cliTagOpt(tag string, tyMap map[string]OptType, p unsafe.Pointer) (*Opt, error) {
 	if tag == "" {
 		return nil, nil
 	}
@@ -98,16 +113,8 @@ func cliTagOpt(tag string, p unsafe.Pointer) (*Opt, error) {
 		case "name":
 			opt.Name = rest
 		case "type":
-			switch rest {
-			case "bool":
-				opt.Type = Bool
-			case "int":
-				opt.Type = Int
-			case "float":
-				opt.Type = Float
-			case "string":
-				opt.Type = String
-			default:
+			opt.Type = tyMap[rest]
+			if opt.Type == nil {
 				return nil, fmt.Errorf("%w: unsupported type: %q", ErrTagParseError, rest)
 			}
 			hasType = true
@@ -116,37 +123,14 @@ func cliTagOpt(tag string, p unsafe.Pointer) (*Opt, error) {
 			opt.Description = rest
 		case "default":
 			if !hasType {
-				return nil, fmt.Errorf("%w: default must come after type", ErrTagParseError, key)
+				return nil, fmt.Errorf("%w: default must come after type for %s", ErrTagParseError, key)
 			}
-			switch opt.Type {
-			case Bool:
-				v, err := strconv.ParseBool(rest)
-				if err != nil {
-					return nil, fmt.Errorf("%w: invalid bool %q", ErrTagParseError, rest)
-				}
-				var a any = v
-				opt.Default = &a
-			case Int:
-				v, err := strconv.ParseInt(rest, 10, 64)
-				if err != nil {
-					return nil, fmt.Errorf("%w: invalid int %q", ErrTagParseError, rest)
-				}
-				var a any = int(v)
-				opt.Default = &a
-			case Float:
-				var f float64
-				if _, err := fmt.Sscanf(rest, "%f", &f); err != nil {
-					return nil, fmt.Errorf("%w: invalid float %q: %w", ErrTagParseError, rest, err)
-				}
-				var a any = f
-				opt.Default = &a
-			case String:
-				var a any = rest
-				opt.Default = &a
-			default:
-				return nil, fmt.Errorf("%w: unsupported type: %q", ErrTagParseError, rest)
+			v, err := opt.Type.Parse(DefaultContext(), rest)
+			if err != nil {
+				return nil, fmt.Errorf("%w: %w", ErrTagParseError, err)
 			}
-			// TODO
+			opt.Default = &v
+			opt = opt.WithValue(v)
 		default:
 			return nil, fmt.Errorf("%w: unknown tag key %q", ErrTagParseError, key)
 		}
@@ -170,21 +154,26 @@ func findRest(v string) (int, string, error) {
 	}
 	escaped := false
 	j := 1
+	b := &strings.Builder{}
 	for j < len(v) {
 		c := v[j]
 		j++
 		switch c {
 		case '\'':
 			if !escaped {
-				return j, v[1 : j-1], nil
+				return j, b.String(), nil
 			}
+			b.WriteByte(c)
 			escaped = false
 		case '\\':
+			if escaped {
+				b.WriteByte(c)
+			}
 			escaped = !escaped
 		default:
+			b.WriteByte(c)
 			escaped = false
 		}
-
 	}
 	return 0, "", ErrTagParseError
 }

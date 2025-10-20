@@ -42,8 +42,8 @@
 //	// The a command
 //	type AConfig struct {
 //		*cli.Command
-//		Name  string `cli:"name=n type=string desc=name"`
-//		Level int    `cli:"name=level type=int desc='A\'s level'"`
+//		Name  string `cli:"name=n type=string desc=name default=sam"`
+//		Level int    `cli:"name=level type=int desc='A\\'s level'"`
 //	}
 //
 //	func ACommand() *cli.Command {
@@ -74,6 +74,9 @@
 //	type BConfig struct {
 //		*cli.Command
 //		env map[string]any
+//
+//		// cli.FuncOpt must be bound to field with type any
+//		E any `cli:"name=e type=env desc='-e key=val sets key to val'"`
 //	}
 //
 //	func (bCfg *BConfig) parseEnv(cc *cli.Context, a string) (any, error) {
@@ -88,163 +91,181 @@
 //		cfg := &BConfig{
 //			env: map[string]any{},
 //		}
+//		opts, err := cli.StructOptsWithTypes(cfg, map[string]cli.OptType{
+//			"env": cli.FuncOpt(cfg.parseEnv),
+//		})
+//		if err != nil {
+//			panic(err)
+//		}
 //		return cli.NewCommandAt(&cfg.Command, "b").
 //			WithAliases("bb", "bbb").
 //			WithSynopsis("b cool and use cli").
 //			WithDescription("b is a subcommand").
-//			WithOpts(&cli.Opt{
-//				Name:        "e",
-//				Description: "set environment",
-//				Type:        cli.FuncOpt(cfg.parseEnv),
-//			}).WithRun(cfg.run)
+//			WithOpts(opts...).
+//			WithRun(cfg.run)
 //	}
 //
 //	func (b *BConfig) run(cc *cli.Context, args []string) error {
 //		args, err := b.Parse(cc, args)
 //		if err != nil {
-//			fmt.Printf("b parse err %s\n", err.Error())
 //			return err
-//		}
-//		fmt.Fprintf(cc.Out, "args: %v\n", args)
-//		for k, v := range b.env {
-//			fmt.Fprintf(cc.Out, "\t%s: %v\n", k, v)
 //		}
 //		if len(b.env) == 0 && len(args) == 0 {
 //			return fmt.Errorf("%w: please supply some -e flags or args", cli.ErrUsage)
+//		}
+//		fmt.Fprintf(cc.Out, "args: %v\nenv:\n", args)
+//		for k, v := range b.env {
+//			fmt.Fprintf(cc.Out, "\t%s: %v\n", k, v)
 //		}
 //		return nil
 //	}
 //
 // Produces this CLI
 //
-//	25-10-19 scott@air example % ./example
-//	example is a demo use of github.com/scott-cotton/cli
+//		# ./example
+//		example is a demo use of github.com/scott-cotton/cli
 //
-//	synopsis: example run me and see
+//		synopsis: example run me and see
 //
+//		commands:
+//		    a  a the a command exits code equal to the number of args
+//		    b  b cool and use cli
 //
-//	commands:
-//	    a  a the a command exits code equal to the number of args
-//	    b  b cool and use cli
+//		 options:
 //
-//
-//	 options:
-//
-//	        -debug  turn on debugging bool
-//
-//	usage error: no command provided
-//	25-10-19 scott@air example % ./example c
-//	example is a demo use of github.com/scott-cotton/cli
-//
-//	synopsis: example run me and see
+//		 -debug  turn on debugging bool
+//		usage error: no command provided
 //
 //
-//	commands:
-//	    a  a the a command exits code equal to the number of args
-//	    b  b cool and use cli
+//		# ./example -debug
+//		example is a demo use of github.com/scott-cotton/cli
+//
+//		synopsis: example run me and see
+//
+//		commands:
+//		    a  a the a command exits code equal to the number of args
+//		    b  b cool and use cli
+//
+//		 options:
+//
+//		 -debug  turn on debugging bool
+//		usage error: no command provided
 //
 //
-//	 options:
+//		# ./example -no-debug
+//		example is a demo use of github.com/scott-cotton/cli
 //
-//	        -debug  turn on debugging bool
+//		synopsis: example run me and see
 //
-//	usage error: no such command: "c"
-//	25-10-19 scott@air example % ./example a
-//	should exit 0
-//	exit 0
-//	25-10-19 scott@air example % ./example a -h
+//		commands:
+//		    a  a the a command exits code equal to the number of args
+//		    b  b cool and use cli
 //
+//		 options:
 //
-//	synopsis: a the a command exits code equal to the number of args
-//
-//
-//	available example options:
-//
-//	        -debug  turn on debugging bool
-//
-//	a options:
-//
-//	 84         cfg := &BConfig{
-//	        -n  name string
-//
-//	usage error: unknown option: "h"
-//	25-10-19 scott@air example % ./example a -n x
-//	should exit 0
-//	exit 0
-//	25-10-19 scott@air example % ./example a argBefore -n x argAfter
-//	should exit 2
-//	exit 2
-//	25-10-19 scott@air example % ./example a arg0 -n x arg1
-//	should exit 2
-//	exit 2
-//	25-10-19 scott@air example % ./example b
-//	args: []
-//	b is a subcommand
-//
-//	synopsis: b cool and use cli
+//		 -debug  turn on debugging bool
+//		usage error: no command provided
 //
 //
-//	available example options:
+//		# ./example -nodebug
+//		example is a demo use of github.com/scott-cotton/cli
 //
-//	        -debug  turn on debugging bool
+//		synopsis: example run me and see
 //
-//	b options:
+//		commands:
+//		    a  a the a command exits code equal to the number of args
+//		    b  b cool and use cli
 //
-//	        -e  set environment <func>
+//		 options:
 //
-//	usage error: please supply some -e flags or args
-//	25-10-19 scott@air example % vim main.go
-//	25-10-19 scott@air example % ./example b
-//	args: []
-//	b is a subcommand
-//
-//	synopsis: b cool and use cli
+//		 -debug  turn on debugging bool
+//		usage error: unknown option: "nodebug"
 //
 //
-//	available example options:
+//		# ./example c
+//		example is a demo use of github.com/scott-cotton/cli
 //
-//	        -debug  turn on debugging bool
+//		synopsis: example run me and see
 //
-//	b options:
+//		commands:
+//		    a  a the a command exits code equal to the number of args
+//		    b  b cool and use cli
 //
-//	        -e  set environment <func>
+//		 options:
 //
-//	usage error: please supply some -e flags or args
-//	25-10-19 scott@air example % ./example b -e
-//	b parse err usage error: option requires a value: e
-//	b is a subcommand
-//
-//	synopsis: b cool and use cli
-//
-//
-//	available example options:
-//
-//	        -debug  turn on debugging bool
-//
-//	b options:
-//
-//	        -e  set environment <func>
-//
-//	usage error: option requires a value: e
-//	25-10-19 scott@air example % ./example b -e x
-//	b parse err usage error: -e expected key=value
-//	b is a subcommand
-//
-//	synopsis: b cool and use cli
+//		 -debug  turn on debugging bool
+//		usage error: no such command: "c"
 //
 //
-//	available example options:
+//		# ./example a -h
+//		synopsis: a the a command exits code equal to the number of args
 //
-//	        -debug  turn on debugging bool
+//		available example options:
 //
-//	b options:
+//		 -debug  turn on debugging bool
 //
-//	        -e  set environment <func>
+//		a options:
 //
-//	usage error: -e expected key=value
-//	25-10-19 scott@air example % ./example b -e key1=vv arg0 -e key2=ww
-//	args: [arg0]
-//	        key2: ww
-//	        key1: vv
-//	25-10-19 scott@air example %
+//		 -n      name      (default sam) string
+//		 -level  A's level int
+//		usage error: unknown option: "h"
+//
+//
+//		# ./example a -debug
+//		should exit 0
+//
+//
+//		# ./example a x -debug
+//		should exit 1
+//
+//
+//		# ./example a x -n wilma -level 2 y
+//		should exit 2
+//
+//
+//		# ./example b
+//		b is a subcommand
+//
+//		synopsis: b cool and use cli
+//
+//		available example options:
+//
+//		 -debug  turn on debugging bool
+//
+//		b options:
+//
+//		 -e  -e key=val sets key to val <func>
+//		usage error: please supply some -e flags or args
+//
+//
+//		# ./example b -e x=y
+//		args: []
+//		env:
+//		        x: y
+//
+//
+//		# ./example b arg0 -e x
+//		b is a subcommand
+//
+//		synopsis: b cool and use cli
+//
+//		available example options:
+//
+//		 -debug  turn on debugging bool
+//
+//		b options:
+//
+//		 -e  -e key=val sets key to val <func>
+//		usage error: -e expected key=value
+//
+//
+//		# ./example b arg0 -e x=y -e x2=y2
+//		args: [arg0]
+//		env:
+//		        x: y
+//		        x2: y2
+//		# ./example b arg0 -e x=y arg1 -debug
+//	     args: [arg0 arg1]
+//	     env:
+//	       x: y
 package main

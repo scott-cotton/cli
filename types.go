@@ -99,7 +99,8 @@ func (o *Opt) WithValue(v any) *Opt {
 			linkPtr := (*float64)(o.Link)
 			*linkPtr = f
 		default:
-			panic("opt link")
+			linkPtr := (*any)(o.Link)
+			*linkPtr = v
 		}
 	}
 	o.Value = &v

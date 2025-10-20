@@ -38,8 +38,8 @@ func MainCommand() *cli.Command {
 // The a command
 type AConfig struct {
 	*cli.Command
-	Name  string `cli:"name=n type=string desc=name"`
-	Level int    `cli:"name=level type=int desc='A\'s level'"`
+	Name  string `cli:"name=n type=string desc=name default=sam"`
+	Level int    `cli:"name=level type=int desc='A\\'s level'"`
 }
 
 func ACommand() *cli.Command {
@@ -70,6 +70,9 @@ func (cfg *AConfig) run(cc *cli.Context, args []string) error {
 type BConfig struct {
 	*cli.Command
 	env map[string]any
+
+	// cli.FuncOpt must be bound to field with type any
+	E any `cli:"name=e type=env desc='-e key=val sets key to val'"`
 }
 
 func (bCfg *BConfig) parseEnv(cc *cli.Context, a string) (any, error) {
@@ -84,29 +87,31 @@ func BCommand() *cli.Command {
 	cfg := &BConfig{
 		env: map[string]any{},
 	}
+	opts, err := cli.StructOptsWithTypes(cfg, map[string]cli.OptType{
+		"env": cli.FuncOpt(cfg.parseEnv),
+	})
+	if err != nil {
+		panic(err)
+	}
 	return cli.NewCommandAt(&cfg.Command, "b").
 		WithAliases("bb", "bbb").
 		WithSynopsis("b cool and use cli").
 		WithDescription("b is a subcommand").
-		WithOpts(&cli.Opt{
-			Name:        "e",
-			Description: "set environment",
-			Type:        cli.FuncOpt(cfg.parseEnv),
-		}).WithRun(cfg.run)
+		WithOpts(opts...).
+		WithRun(cfg.run)
 }
 
 func (b *BConfig) run(cc *cli.Context, args []string) error {
 	args, err := b.Parse(cc, args)
 	if err != nil {
-		fmt.Printf("b parse err %s\n", err.Error())
 		return err
+	}
+	if len(b.env) == 0 && len(args) == 0 {
+		return fmt.Errorf("%w: please supply some -e flags or args", cli.ErrUsage)
 	}
 	fmt.Fprintf(cc.Out, "args: %v\nenv:\n", args)
 	for k, v := range b.env {
 		fmt.Fprintf(cc.Out, "\t%s: %v\n", k, v)
-	}
-	if len(b.env) == 0 && len(args) == 0 {
-		return fmt.Errorf("%w: please supply some -e flags or args", cli.ErrUsage)
 	}
 	return nil
 }
