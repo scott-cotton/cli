@@ -1,7 +1,8 @@
 # cli
 
 `cli` is a minimalist, ergonomic, scalable library for building Go
-commands.
+commands with no dependencies outside Go stdlib.  Built for ease of
+use and ease of growth of Go commands.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/scott-cotton/cli.svg)](https://pkg.go.dev/github.com/scott-cotton/cli)
 
@@ -9,7 +10,12 @@ commands.
 
 Simple [example](example/main.go) demonstrates subcommands, flag struct tags,
 error handling, and a simple CLI code management pattern in a single small Go
-file. No dependencies outside Go stdlib.
+file. 
+
+## Status
+
+`cli` is young but it works.  The general design and organisation of the data types
+has mostly settled but may evolve slightly.  May still have some bugs in the corners.
 
 ## Why
 
@@ -28,11 +34,3 @@ unobtrusive.
 - Kong does even more
 - Other attempts at finding a balance between minimalism and expressivity
   don't seem to hit the mark for expressivity.
-
-
-## Status
-
-`cli` is young but it works.  The general design and organisation of the data types
-has mostly settled but may evolve slightly.  May still have some bugs in the corners.
-
-
