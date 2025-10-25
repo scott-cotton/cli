@@ -95,7 +95,7 @@ func cliTagOpt(tag string, tyMap map[string]OptType, p unsafe.Pointer) (*Opt, er
 	i := 0
 	hasType := false
 	for i < n {
-		key, rest, ok := strings.Cut(tag[i:], "=")
+		key, _, ok := strings.Cut(tag[i:], "=")
 		if !ok {
 			return nil, ErrTagParseError
 		}
