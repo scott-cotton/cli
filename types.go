@@ -193,5 +193,5 @@ func (f FuncOpt) ArgRequired() bool {
 	return true
 }
 func (f FuncOpt) String() string {
-	return "<func>"
+	return "(func)"
 }
