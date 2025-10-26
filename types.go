@@ -195,3 +195,27 @@ func (f FuncOpt) ArgRequired() bool {
 func (f FuncOpt) String() string {
 	return "(func)"
 }
+
+type namedFuncOpt struct {
+	f    FuncOpt
+	name string
+}
+
+func (n *namedFuncOpt) Parse(cc *Context, v string) (any, error) {
+	return n.f(cc, v)
+}
+func (n *namedFuncOpt) ArgRequired() bool {
+	return true
+}
+func (n *namedFuncOpt) String() string {
+	return n.name
+}
+
+// NamedFuncOpt gives a way to name the type of
+// a function type of an option.
+func NamedFuncOpt(fo FuncOpt, name string) OptType {
+	return &namedFuncOpt{
+		f:    fo,
+		name: name,
+	}
+}
