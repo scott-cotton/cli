@@ -66,6 +66,7 @@ func (cmd *Command) Usage(cc *Context, err error) {
 
 	if errors.Is(err, ErrUsage) {
 		fmt.Fprintln(w)
+		fmt.Fprintln(w)
 		fmt.Fprintln(w, err.Error())
 	}
 }
