@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 	"unicode"
-	"unsafe"
 )
 
 // StructOpts uses reflection on structs to create Opts whose values are stored
@@ -70,8 +69,7 @@ func StructOptsWithTypes(s any, tyMap map[string]OptType) ([]*Opt, error) {
 		if !fVal.CanAddr() {
 			continue
 		}
-		uPtr := fVal.Addr().UnsafePointer()
-		opt, err := cliTagOpt(f.Tag.Get("cli"), sMap, uPtr)
+		opt, err := cliTagOpt(f.Tag.Get("cli"), fVal, sMap)
 		if err != nil {
 			return nil, err
 		}
@@ -82,18 +80,31 @@ func StructOptsWithTypes(s any, tyMap map[string]OptType) ([]*Opt, error) {
 	return opts, nil
 }
 
-func cliTagOpt(tag string, tyMap map[string]OptType, p unsafe.Pointer) (*Opt, error) {
+func cliTagOpt(tag string, fVal reflect.Value, tyMap map[string]OptType) (*Opt, error) {
 	if tag == "" {
 		return nil, nil
 	}
+	p := fVal.Addr().UnsafePointer()
 	tag = strings.TrimSpace(tag)
 	opt := &Opt{
 		Link: p,
 	}
+	hasType := true
+	switch fVal.Interface().(type) {
+	case bool:
+		opt.Type = Bool
+	case int:
+		opt.Type = Int
+	case string:
+		opt.Type = String
+	case float64:
+		opt.Type = Float
+	default:
+		hasType = false
+	}
 
 	n := len(tag)
 	i := 0
-	hasType := false
 	for i < n {
 		key, _, ok := strings.Cut(tag[i:], "=")
 		if !ok {
@@ -113,12 +124,22 @@ func cliTagOpt(tag string, tyMap map[string]OptType, p unsafe.Pointer) (*Opt, er
 		case "name":
 			opt.Name = rest
 		case "type":
+			if hasType {
+				return nil, fmt.Errorf("type specified but inferred (%s)", opt.Type)
+			}
 			opt.Type = tyMap[rest]
 			if opt.Type == nil {
 				return nil, fmt.Errorf("%w: unsupported type: %q", ErrTagParseError, rest)
 			}
 			hasType = true
-
+		case "aliases":
+			als := strings.Split(rest, ",")
+			for _, al := range als {
+				al = strings.TrimSpace(al)
+				if al != "" {
+					opt.Aliases = append(opt.Aliases, al)
+				}
+			}
 		case "desc":
 			opt.Description = rest
 		case "default":
