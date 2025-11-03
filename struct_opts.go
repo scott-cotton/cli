@@ -15,7 +15,7 @@ import (
 // arguments.  Here is an example:
 //
 //	type CommandConfig struct {
-//	    Debug bool `cli:"name=debug type=bool desc='turn on debugging'"`
+//	    Debug bool `cli:"name=debug aliases=d,de default=true desc='turn on debugging'"`
 //	}
 //
 // Calling [Opt.WithValue] on a resulting opt, for example as is done in
