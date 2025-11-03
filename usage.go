@@ -16,11 +16,11 @@ func (cmd *Command) Usage(cc *Context, err error) {
 	if err != nil {
 		w = cc.Err
 	}
-	if cmd.Description != "" {
-		fmt.Fprintln(w, cmd.Description)
-		fmt.Fprintln(w)
-	}
 	fmt.Fprintf(w, "synopsis: %s\n", cmd.Synopsis)
+	if cmd.Description != "" {
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, cmd.Description)
+	}
 	if len(cmd.Children) != 0 {
 		fmt.Fprintf(w, "\ncommands:\n")
 		tw := tabwriter.NewWriter(w, 1, 4, 2, ' ', 0)
