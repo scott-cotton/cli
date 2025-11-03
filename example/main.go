@@ -13,7 +13,7 @@ func main() {
 }
 
 type MainConfig struct {
-	Debug bool `cli:"name=debug type=bool desc='turn on debugging'"`
+	Debug bool `cli:"name=debug desc='turn on debugging'"`
 }
 
 func MainCommand() *cli.Command {
@@ -38,8 +38,8 @@ func MainCommand() *cli.Command {
 // The a command
 type AConfig struct {
 	*cli.Command
-	Name  string `cli:"name=n type=string desc=name default=sam"`
-	Level int    `cli:"name=level type=int desc='A\\'s level'"`
+	Name  string `cli:"name=n aliases=name,na desc=name default=sam"`
+	Level int    `cli:"name=level aliases=l desc='A\\'s level'"`
 }
 
 func ACommand() *cli.Command {

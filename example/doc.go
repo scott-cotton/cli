@@ -1,6 +1,6 @@
 // Package cli command.
 //
-// In short, this source code
+// # In short, this source code
 //
 //	package main
 //
@@ -17,7 +17,7 @@
 //	}
 //
 //	type MainConfig struct {
-//		Debug bool `cli:"name=debug type=bool desc='turn on debugging'"`
+//		Debug bool `cli:"name=debug desc='turn on debugging'"`
 //	}
 //
 //	func MainCommand() *cli.Command {
@@ -42,8 +42,8 @@
 //	// The a command
 //	type AConfig struct {
 //		*cli.Command
-//		Name  string `cli:"name=n type=string desc=name default=sam"`
-//		Level int    `cli:"name=level type=int desc='A\\'s level'"`
+//		Name  string `cli:"name=n aliases=name,na desc=name default=sam"`
+//		Level int    `cli:"name=level aliases=l desc='A\\'s level'"`
 //	}
 //
 //	func ACommand() *cli.Command {
@@ -122,150 +122,136 @@
 //
 // Produces this CLI
 //
-//		# ./example
-//		example is a demo use of github.com/scott-cotton/cli
+//	25-11-03 scott@air example % ./example
+//	synopsis: example run me and see
 //
-//		synopsis: example run me and see
+//	example is a demo use of github.com/scott-cotton/cli
 //
-//		commands:
-//		    a  a the a command exits code equal to the number of args
-//		    b  b cool and use cli
+//	commands:
+//	    a  a the a command exits code equal to the number of args
+//	    b  b cool and use cli
 //
-//		 options:
+//	 options:
 //
-//		 -debug  turn on debugging bool
-//		usage error: no command provided
+//	 -debug  turn on debugging bool
 //
+//	usage error: no command provided
+//	25-11-03 scott@air example % ./example -debug
+//	synopsis: example run me and see
 //
-//		# ./example -debug
-//		example is a demo use of github.com/scott-cotton/cli
+//	example is a demo use of github.com/scott-cotton/cli
 //
-//		synopsis: example run me and see
+//	commands:
+//	    a  a the a command exits code equal to the number of args
+//	    b  b cool and use cli
 //
-//		commands:
-//		    a  a the a command exits code equal to the number of args
-//		    b  b cool and use cli
+//	 options:
 //
-//		 options:
+//	 -debug  turn on debugging bool
 //
-//		 -debug  turn on debugging bool
-//		usage error: no command provided
+//	usage error: no command provided
+//	25-11-03 scott@air example % ./example -no-debug
+//	synopsis: example run me and see
 //
+//	example is a demo use of github.com/scott-cotton/cli
 //
-//		# ./example -no-debug
-//		example is a demo use of github.com/scott-cotton/cli
+//	commands:
+//	    a  a the a command exits code equal to the number of args
+//	    b  b cool and use cli
 //
-//		synopsis: example run me and see
+//	 options:
 //
-//		commands:
-//		    a  a the a command exits code equal to the number of args
-//		    b  b cool and use cli
+//	 -debug  turn on debugging bool
 //
-//		 options:
+//	usage error: no command provided
+//	25-11-03 scott@air example % ./example -nodebug
+//	synopsis: example run me and see
 //
-//		 -debug  turn on debugging bool
-//		usage error: no command provided
+//	example is a demo use of github.com/scott-cotton/cli
 //
+//	commands:
+//	    a  a the a command exits code equal to the number of args
+//	    b  b cool and use cli
 //
-//		# ./example -nodebug
-//		example is a demo use of github.com/scott-cotton/cli
+//	 options:
 //
-//		synopsis: example run me and see
+//	 -debug  turn on debugging bool
 //
-//		commands:
-//		    a  a the a command exits code equal to the number of args
-//		    b  b cool and use cli
+//	usage error: unknown option: "nodebug"
+//	25-11-03 scott@air example % ./example c
+//	synopsis: example run me and see
 //
-//		 options:
+//	example is a demo use of github.com/scott-cotton/cli
 //
-//		 -debug  turn on debugging bool
-//		usage error: unknown option: "nodebug"
+//	commands:
+//	    a  a the a command exits code equal to the number of args
+//	    b  b cool and use cli
 //
+//	 options:
 //
-//		# ./example c
-//		example is a demo use of github.com/scott-cotton/cli
+//	 -debug  turn on debugging bool
 //
-//		synopsis: example run me and see
+//	usage error: no such command: "c"
+//	25-11-03 scott@air example % ./example a -h
+//	synopsis: a the a command exits code equal to the number of args
 //
-//		commands:
-//		    a  a the a command exits code equal to the number of args
-//		    b  b cool and use cli
+//	available example options:
 //
-//		 options:
+//	 -debug  turn on debugging bool
 //
-//		 -debug  turn on debugging bool
-//		usage error: no such command: "c"
+//	a options:
 //
+//	 -n, -name, -na  name      (default sam) string
+//	 -level, -l      A's level int
 //
-//		# ./example a -h
-//		synopsis: a the a command exits code equal to the number of args
+//	usage error: unknown option: "h"
+//	25-11-03 scott@air example % ./example a -debug
+//	should exit 0
+//	25-11-03 scott@air example % /example a x -debug
+//	zsh: no such file or directory: /example
+//	25-11-03 scott@air example % ./example a x -debug
+//	should exit 1
+//	25-11-03 scott@air example % ./example a x -n wilma -level 2 y
+//	should exit 2
+//	25-11-03 scott@air example % ./example b
+//	synopsis: b cool and use cli
 //
-//		available example options:
+//	b is a subcommand
 //
-//		 -debug  turn on debugging bool
+//	available example options:
 //
-//		a options:
+//	 -debug  turn on debugging bool
 //
-//		 -n      name      (default sam) string
-//		 -level  A's level int
-//		usage error: unknown option: "h"
+//	b options:
 //
+//	 -e  -e key=val sets key to val (func)
 //
-//		# ./example a -debug
-//		should exit 0
+//	usage error: please supply some -e flags or args
+//	25-11-03 scott@air example % ./example b -e x=y
+//	args: []
+//	env:
+//	        x: y
+//	25-11-03 scott@air example % ./example b arg0 -e x
+//	synopsis: b cool and use cli
 //
+//	b is a subcommand
 //
-//		# ./example a x -debug
-//		should exit 1
+//	available example options:
 //
+//	 -debug  turn on debugging bool
 //
-//		# ./example a x -n wilma -level 2 y
-//		should exit 2
+//	b options:
 //
+//	 -e  -e key=val sets key to val (func)
 //
-//		# ./example b
-//		b is a subcommand
-//
-//		synopsis: b cool and use cli
-//
-//		available example options:
-//
-//		 -debug  turn on debugging bool
-//
-//		b options:
-//
-//		 -e  -e key=val sets key to val <func>
-//		usage error: please supply some -e flags or args
-//
-//
-//		# ./example b -e x=y
-//		args: []
-//		env:
-//		        x: y
-//
-//
-//		# ./example b arg0 -e x
-//		b is a subcommand
-//
-//		synopsis: b cool and use cli
-//
-//		available example options:
-//
-//		 -debug  turn on debugging bool
-//
-//		b options:
-//
-//		 -e  -e key=val sets key to val <func>
-//		usage error: -e expected key=value
-//
-//
-//		# ./example b arg0 -e x=y -e x2=y2
-//		args: [arg0]
-//		env:
-//		        x: y
-//		        x2: y2
-//		# ./example b arg0 -e x=y arg1 -debug
-//	     args: [arg0 arg1]
-//	     env:
-//	       x: y
+//	usage error: -e expected key=value
+//	25-11-03 scott@air example % ./example b arg0 -e x=y -e x2=y2
+//	args: [arg0]
+//	env:
+//	        x: y
+//	        x2: y2
+//	25-11-03 scott@air example % ./example b arg0 -e x=y arg1 -debug
+//	args: [arg0 arg1]
+//	env:
+//	        x: y
 package main

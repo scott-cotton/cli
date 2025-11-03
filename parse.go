@@ -106,8 +106,9 @@ func (cmd *Command) parse(cc *Context, args []string, all bool) ([]string, error
 			v, err := opt.Type.Parse(cc, args[skip])
 			if err != nil {
 				errs = errors.Join(errs, err)
+			} else {
+				opt.WithValue(v)
 			}
-			opt.WithValue(v)
 			continue
 		}
 		var x any = opt
