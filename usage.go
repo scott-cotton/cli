@@ -31,7 +31,7 @@ func (cmd *Command) Usage(cc *Context, err error) {
 				if ok {
 					fmt.Fprintf(tw, "\t%s\t%s", name, strings.TrimSpace(cmd.Synopsis))
 				} else {
-					fmt.Fprintf(tw, "\t%q\t", cmd.Name)
+					fmt.Fprintf(tw, "\t%s\t", cmd.Name)
 				}
 			}
 			fmt.Fprintln(tw)
