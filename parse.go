@@ -59,6 +59,10 @@ func (cmd *Command) parse(cc *Context, args []string, all bool) ([]string, error
 		if arg != "" && arg[0] == '-' {
 			arg = arg[1:]
 		}
+		// -name=value: the value is right here, so the option is fully handled and the
+		// arg must NOT fall through to the lookup below — `arg` is still "name=value"
+		// there, which matches no option, so a correctly parsed flag earned an
+		// "unknown option" error naming the flag it had just applied.
 		name, rest, ok := strings.Cut(arg, "=")
 		if ok {
 			opt := d[name]
@@ -72,6 +76,7 @@ func (cmd *Command) parse(cc *Context, args []string, all bool) ([]string, error
 				continue
 			}
 			opt.WithValue(v)
+			continue
 		}
 		opt := d[arg]
 		flip := false
